@@ -1,12 +1,14 @@
+# Window dimensions 1600x900
 from tkinter import *
 import time
 import random
 #from PIL import Image,ImageTk
 
 
-   
+name=[]
 windows = Tk()
 windows.title('ULTIMATE_PING_PONG')
+windows.geometry("1600x900")
 # windows.bind_all('<Control-x>',boss_key)
 windows.config(bg='purple')
 n=0; lists=[]
@@ -22,28 +24,33 @@ def leaderboard():
     lists2=f1.split().copy()
     lists3=[]
     print(lists1)
-    for j in range(len(lists1)):
+    print(lists2)
+    lists3=lists2.copy()
+    for j in range(len(lists1)+1):
         for i in range(len(lists1)-1):
-            if len(lists3)<len(lists1):
-                lists3.append('')
-            if int(lists1[i])<int(lists1[i+1]):
-                lists1[i]=str(int(lists1[i])+int(lists1[i+1]))
-                (lists1[i+1])=str(int(lists1[i])-int(lists1[i+1]))
-                (lists1[i])=str(int(lists1[i])-int(lists1[i+1]))
+            lists2=lists3.copy()
+            if float(lists1[i])<float(lists1[i+1]):
+                lists1[i]=str(float(lists1[i])+float(lists1[i+1]))
+                (lists1[i+1])=str(float(lists1[i])-float(lists1[i+1]))
+                (lists1[i])=str(float(lists1[i])-float(lists1[i+1]))
                 lists3[i]=lists2[i+1]
+                lists3[i+1]=lists2[i]
+    print(lists1)
     print(lists3)
+
     frame5=Frame(gameWindow, bg='turquoise')
     label=Label(frame5, text='RANK         NAMES         SCORES')
     frame5.pack()
     label.pack()
     labels=[]
     for i in range(len(lists1)):
-        labels.append(Label(frame5, text=str(i+1)+'         '+lists3[i]+'         '+lists1[i],fg='blue')) 
+        labels.append(Label(frame5, text=str(i+1)+'         '+str(lists3[i])+'         '+str(lists1[i]),fg='blue')) 
         labels[i].pack()
 
 
 
 def best_scores():
+    global scores
     f = open("last_game_score_data.txt", "a")
     f.write(str(scores)+' ')
     f.close()
@@ -51,16 +58,14 @@ def best_scores():
     f1=f.read().split()
     score=0
     for a in f1:
-        if score<=int(a):
-            score=int(a)
+        if score<=float(a):
+            score=float(a)
     return score
 
 
-def resume():
-    global frame4,frame3,gameWindow
-    frame4.pack_forget()
-
-    pass
+def quit():
+    global gameWindow
+    gameWindow.quit()
 
 def cheat(e):
     global bar,gameCanvas
@@ -69,14 +74,17 @@ def cheat(e):
 
 
 def save():
-    global pos_ball, pos_bar,speedx,speedy,t
-    f=open('last_game_data.txt', 'a')
+    global pos_ball, pos_bar,speedx,speedy,t,scores,gameWindow,name
+    f1 = open("last_game_name_data.txt","r").read().split()
+    name=list(f1[len(f1)-1])
+    f=open('last_game_data.txt', 'w')
     x=''; y=''
     for a in pos_ball:
         x=x+str(a)+' '
     for b in pos_bar:
         y=y+str(b)+' '
     f.write(f'{x}{speedx} {t} {y}{scores}')
+    gameWindow.quit()
 
 
 def move_right(event=None):
@@ -88,7 +96,6 @@ def move_right(event=None):
         gameCanvas.move(bar, 20,0)
 
 def move_left(event):
-    print('hi')
     global bar,gameCanvas, pos_bar
     pos_bar=gameCanvas.coords(bar)
     if pos_bar[0]<=0:        
@@ -116,9 +123,9 @@ def continue_click():
     frame1.pack()
 
 def pause_click():
-    global frame4,frame3,gameWindow
+    global frame4,frame3,gameWindow, gameCanvas, resume_button, save_button
     frame4=Frame(gameCanvas,bg='grey', padx=30, pady=30)
-    resume_button=Button(frame4, text='Resume', bg='yellow', padx=10,font=('Helvetica', 14))
+    resume_button=Button(frame4, text='Quit', bg='yellow', padx=10,font=('Helvetica', 14), command=quit)
     save_button=Button(frame4, text='Save & Quit', bg='blue',fg='white', padx=10,font=('Helvetica', 14), command=save)
     frame4.pack()
     resume_button.pack()
@@ -128,27 +135,54 @@ def pause_click():
 def easy():
     global n, lists, windows
     n=1
-    lists=[0,0,100,150,5,0.01,300,470,600,500,0]
+    lists=[0,0,100,150,5,0.01,300,480,600,500,0]
     windows.quit()
     
     
 def medium():
     global lists, windows
     n=2
-    lists=[0,0,60,90,8,0.007,350,460,550,500,0]
+    lists=[0,0,60,90,8,0.007,350,480,550,500,0]
     windows.quit()
     
 def hard():
     global lists, windows
     n=3
-    lists=[0,0,20,40,10,0.004,400,450,500,500,0]
+    lists=[0,0,20,40,10,0.004,400,480,500,500,0]
     windows.quit()
 def reload():
-    global lists, windows
+    global lists, windows,name
+    f=open('last_game_name_data.txt','a')
+    if len(name)!=0:
+        for a in name:
+            f.write(a)
+    f.write(' ')
+    f.close()
+    name.clear()
     f=((open('last_game_data.txt','r')).read()).split(' ')
     lists=f.copy()
     print(lists)
     windows.quit()
+
+def bossKey(e):
+    global gameWindow, windows, image, imageLabel, bossWindow
+    gameWindow.destroy()
+    windows.destroy()
+    bossWindow = Tk()
+    bossWindow.geometry("1600x900")
+    image = PhotoImage(file="boss.png")
+    imageLabel = Label(bossWindow, image=image)
+    imageLabel.place(x = 1, y=1 , relheight=1, relwidth=1)
+    bossWindow.mainloop()
+
+def bossKeyWindow(e=None):
+    windows.destroy()
+    bossWindow = Tk()
+    bossWindow.geometry("1600x900")
+    image = PhotoImage(file="boss.png")
+    imageLabel = Label(bossWindow, image=image)
+    imageLabel.place(x = 1, y=1 , relheight=1, relwidth=1)
+    bossWindow.mainloop()
 
 
 frame=LabelFrame(windows, text='WELCOME TO ULTIMATE PING PONG....', font=('Helvetica',50),bd=0,fg='yellow',  pady=20, bg='purple')
@@ -166,6 +200,7 @@ reload_button=Button(frame,bg='red', text='RELOAD LAST GAME', font=('Helvetica',
 if len(file)==0:
     reload_button.config(state='disabled')
 reload_button.grid(row=2,column=0,columnspan=2)
+windows.bind_all("<b>", bossKeyWindow)
 windows.mainloop()
 
 
@@ -194,13 +229,15 @@ gameWindow.title("Drawing")
 gameWindow.bind('<Right>', move_right)
 gameWindow.bind('<Left>', move_left)
 gameWindow.bind('<Return>',cheat)
+gameWindow.bind_all("<b>", bossKey)
+windows.bind_all("<b>", bossKey)
 
 frame3=Frame(gameWindow)
 gameCanvas = Canvas(frame3, width=WIDTH, height=HEIGHT, bg="black")
 pause_button=Button(frame3, text='PAUSE', font=('Helvetica',14),width=72, pady=20, bg='blue', command=pause_click)
 pause_button.pack()
 gameCanvas.pack(expand=1)
-scores=0
+
 ball = gameCanvas.create_oval(x1, y1, x2, y2, fill='yellow')
 bar = gameCanvas.create_rectangle(r1, r2, r3, r4, fill='yellow')
 frame3.pack()
